@@ -1,0 +1,59 @@
+{
+	"name": "sql_vehicle_location",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "mateuszj_sqldb_poc_1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Nr_Boczny",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Nr_Rej",
+				"type": "text"
+			},
+			{
+				"name": "Brygada",
+				"type": "text"
+			},
+			{
+				"name": "Nazwa_Linii",
+				"type": "text"
+			},
+			{
+				"name": "Ostatnia_Pozycja_Szerokosc",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Ostatnia_Pozycja_Dlugosc",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Data_Aktualizacji",
+				"type": "text"
+			},
+			{
+				"name": "record_id",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "vehicle_location"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

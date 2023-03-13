@@ -1,0 +1,250 @@
+{
+	"name": "location_to_sql",
+	"properties": {
+		"activities": [
+			{
+				"name": "Insert csv to SQL",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Ostatnia_Pozycja_Dlugosc"
+								},
+								"sink": {
+									"name": "Ostatnia_Pozycja_Dlugosc",
+									"precision": 15
+								}
+							},
+							{
+								"source": {
+									"name": "_id"
+								},
+								"sink": {
+									"name": "_id",
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "Nazwa_Linii"
+								},
+								"sink": {
+									"name": "Nazwa_Linii"
+								}
+							},
+							{
+								"source": {
+									"name": "Brygada"
+								},
+								"sink": {
+									"name": "Brygada"
+								}
+							},
+							{
+								"source": {
+									"name": "Nr_Rej"
+								},
+								"sink": {
+									"name": "Nr_Rej"
+								}
+							},
+							{
+								"source": {
+									"name": "Data_Aktualizacji"
+								},
+								"sink": {
+									"name": "Data_Aktualizacji"
+								}
+							},
+							{
+								"source": {
+									"name": "Nr_Boczny"
+								},
+								"sink": {
+									"name": "Nr_Boczny",
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "Ostatnia_Pozycja_Szerokosc"
+								},
+								"sink": {
+									"name": "Ostatnia_Pozycja_Szerokosc",
+									"precision": 15
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "csv_vehicle_location",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "@pipeline().parameters.filename"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "sql_vehicle_location",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Delete csv from input",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "Move location csv to archive",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "csv_vehicle_location",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "@pipeline().parameters.filename"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "mateuszj_storage_poc_1",
+							"type": "LinkedServiceReference"
+						},
+						"path": "pipeline-logs"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "Move location csv to archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Insert csv to SQL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "csv_vehicle_location",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "@pipeline().parameters.filename"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "csv_archive_vehicle_location",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"parameters": {
+			"filename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-08T14:58:14Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

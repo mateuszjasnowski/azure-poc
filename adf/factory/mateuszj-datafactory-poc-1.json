@@ -1,0 +1,9 @@
+{
+	"name": "mateuszj-datafactory-poc-1",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "70706815-b8b7-4246-a31f-a985625d4706",
+		"tenantId": "76a2ae5a-9f00-4f6b-95ed-5d33d77c4d61"
+	}
+}

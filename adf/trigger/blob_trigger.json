@@ -1,0 +1,28 @@
+{
+	"name": "blob_trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "location_to_sql",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"filename": "@triggerBody().fileName"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/input/blobs/vehicle_location",
+			"blobPathEndsWith": ".csv",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/870f0d5a-ee4c-41a3-b129-f7ee9ec81705/resourceGroups/cap-abnamro-data-auto-rg-we/providers/Microsoft.Storage/storageAccounts/mateuszjstoragepoc1",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
