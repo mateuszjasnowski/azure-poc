@@ -1,24 +1,53 @@
+"""
+Azure function to collect public transport vehicles location and save to blob storge.
+Module to handle html request and proceed with data workflow
+"""
+
 import logging
+from requests.exceptions import MissingSchema
+from requests.exceptions import ConnectTimeout
+from requests.exceptions import ConnectionError as RequestsError
 
 import azure.functions as func
+from .weather_data import WeatherData
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    """
+    Reciving http requests,
+    collecting data file from remote location
+    saving to blob storage
+    responding to with html response
+    """
+    logging.info("Recived html request. Executing actions ...")
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+    return_msg = {
+        "message": "Unkown error",
+        "status": "failed",
+    }
+    status_code = 400
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
+    try:
+        new_location_data = WeatherData().azure_blob_save()
+    except MissingSchema as error:
+        return_msg["message"] = error
+    except ConnectTimeout:
+        return_msg["message"] = "Connection timeout"
+    except RequestsError as error:
+        return_msg["message"] = "Connection error"
+        return_msg["error"] = error
+
     else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+        if new_location_data:
+            return_msg[
+                "message"
+            ] = "Successfully saved file in blob storage from given url."
+            return_msg["status"] = "success"
+            return_msg["new_file_name"] = new_location_data
+            status_code = 200
+
+        else:
+            return_msg["message"] = "unkown error"
+            return_msg["status"] = "error"
+
+    return func.HttpResponse(str(return_msg), status_code=status_code)
